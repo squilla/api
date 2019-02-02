@@ -7,6 +7,7 @@ const app = express();
 //  Setup middleware:
 app.use(cookieParser());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 
 //  Mount all routes on /api path
