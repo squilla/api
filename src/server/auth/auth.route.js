@@ -1,12 +1,15 @@
 const express = require('express');
 const controller = require('./auth.controller');
+const artistController = require('../artist/artist.controller');
 
 const router = express.Router();
 
 //  POST: Signs up a new regular user and issues cookie
 router.post('/sign-up', (req, res) => {
   if (req.body.isArtist) {
-    // Do logic to create new artist instead of base user
+    artistController.createArtist(req.body)
+      .then(user => controller.issueCookie(res, user))
+      .catch(err => res.send(err));
   } else {
     controller.signUp(req.body)
       .then(user => controller.issueCookie(res, user))

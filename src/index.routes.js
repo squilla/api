@@ -1,8 +1,10 @@
 const express = require('express');
 const authRoutes = require('./server/auth/auth.route');
+const artistRoutes = require('./server/artist/artist.route');
 
 const router = express.Router();
 
 router.use('/auth', authRoutes);
+router.use('/artists', artistRoutes);
 
 module.exports = router;
