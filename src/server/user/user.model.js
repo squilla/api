@@ -6,7 +6,7 @@ const options = { discriminatorKey: 'kind' };
 
 const BaseSchema = new Schema({
   createdAt: { type: Date, default: Date.now() },
-  updateAt: { type: Date },
+  updatedAt: { type: Date },
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
   email: { type: String, required: true },

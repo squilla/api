@@ -10,14 +10,14 @@ function createArtist(artistData) {
 
 //  Sends all artist objects in array
 function sendAllArtist(res) {
-  Model.Artist.find({}).populate('art')
+  Model.Artist.find({})
     .then(artists => res.send(artists))
     .catch(err => res.send(err));
 }
 
 //  Given an id will send specific artist object
 function sendSingleArtist(id, res) {
-  Model.Artist.findById(id).populate('art')
+  Model.Artist.findById(id)
     .then(artist => res.send(artist))
     .catch(err => res.send(err));
 }
