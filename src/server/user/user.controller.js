@@ -35,9 +35,17 @@ function updateUser(id, userData, res) {
     .catch(err => res.status(400).send(err));
 }
 
+//  Sends all Reg User objects only (disregards artists)
+function sendRegUsers(res) {
+  Model.RegUser.find({})
+    .then(users => res.send(users))
+    .catch(err => res.send(err));
+}
+
 module.exports = {
   sendAllUsers,
   sendSingleUser,
   updateUser,
   removeUser,
+  sendRegUsers,
 };
