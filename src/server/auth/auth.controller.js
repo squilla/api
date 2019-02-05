@@ -7,7 +7,7 @@ const config = require('../../config/config');
 function issueCookie(res, user) {
   const token = jwt.sign({ _id: user._id }, config.jwtSecret, { expiresIn: '60 days' }); // eslint-disable-line no-underscore-dangle
   res.cookie(config.cookie, token, { maxAge: 60 * 60 * 24 * 1000, httpOnly: true });
-  res.status(200).send('User successfully signed in.');
+  return res.status(200).send('User successfully signed in.');
 }
 
 //  Creates new user

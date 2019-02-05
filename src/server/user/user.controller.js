@@ -1,7 +1,7 @@
 const Model = require('./user.model');
 
 // NOTE: user controller contains functions for regular users (RegUser)
-//  and all users (both RegUser and Artits). All artist specific functions are in artist controller
+//  and all users (both RegUser and Artists). All artist specific functions are in artist controller
 
 //  Returns list of ALL user objects
 async function Index(req, res) {

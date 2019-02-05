@@ -5,20 +5,19 @@ const wrap = require('../../middleware/asyncHandler');
 
 const router = express.Router();
 
+//  GET: signs a user out and removes token
+router.get('sign-out', controller.SignOut);
+
 //  POST: Signs up a new regular user and issues cookie
 router.post('/sign-up', wrap((req, res) => {
+  //  If user is artist, sign up as artist
   if (req.body.isArtist) {
-    artistController.Create(req, res);
-  } else {
-    return controller.SignUp(req, res);
+    return artistController.Create(req, res);
   }
-  return 0;
+  return controller.SignUp(req, res);
 }));
 
 //  POST: signs in a user and issues a cookie
 router.post('/sign-in', wrap(controller.SignIn));
-
-//  GET: signs a user out and removes token
-router.get('/sign-out', wrap(controller.SignOut));
 
 module.exports = router;
