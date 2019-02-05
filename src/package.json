@@ -17,8 +17,9 @@
     "mongoose": "^5.4.7"
   },
   "devDependencies": {
-    "eslint": "^5.12.1",
+    "eslint": "^5.13.0",
     "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.16.0",
     "mocha": "^5.2.0",
     "sinon": "^7.2.3",
     "sinon-test": "^2.4.0"
