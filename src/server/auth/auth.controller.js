@@ -43,4 +43,5 @@ module.exports = {
   SignUp,
   SignIn,
   SignOut,
+  issueCookie,
 };

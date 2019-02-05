@@ -1,29 +1,26 @@
 const Model = require('../user/user.model');
-
+const authController = require('../auth/auth.controller');
 //  NOTE: Aritst is actually a user so ArtistSchema is in User Model
 
 //  Creates a new artist given artist data (check user.model for ArtistSchema)
-function createArtist(artistData) {
-  const artist = new Model.Artist(artistData);
-  return artist.save();
+async function Create(req, res) {
+  const artist = await new Model.Artist(req.body);
+  await artist.save();
+  return authController.issueCookie(res, artist);
 }
 
 //  Sends all artist objects in array
-function sendAllArtist(res) {
-  Model.Artist.find({})
-    .then(artists => res.send(artists))
-    .catch(err => res.send(err));
+async function Index(req, res) {
+  res.send(await Model.Artist.find());
 }
 
 //  Given an id will send specific artist object
-function sendSingleArtist(id, res) {
-  Model.Artist.findById(id)
-    .then(artist => res.send(artist))
-    .catch(err => res.send(err));
+async function Get(req, res) {
+  res.send(await Model.Artist.findById(req.params.id));
 }
 
 module.exports = {
-  sendAllArtist,
-  sendSingleArtist,
-  createArtist,
+  Index,
+  Create,
+  Get,
 };
