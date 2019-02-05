@@ -34,8 +34,9 @@ async function SignIn(req, res) {
 }
 
 //  Signs a user out (removes jwt token)
-function SignOut(res) {
-  return res.clearCookie(config.cookie);
+function SignOut(req, res) {
+  res.clearCookie(config.cookie);
+  return res.status(200).send('User was successfully signed out.');
 }
 
 module.exports = {
