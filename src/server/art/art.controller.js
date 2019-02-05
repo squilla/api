@@ -1,23 +1,28 @@
 const ArtModel = require('./art.model');
 
 module.exports = {
+  // Show all Art
   async Index(req, res) {
-    res.send(await ArtModel.find());
+    res.json(await ArtModel.find());
   },
 
+  // Post new Art
   async Create(req, res) {
-    res.send(await ArtModel.create(req.body));
+    res.json(await ArtModel.create(req.body));
   },
 
+  // Display one Art
   async Get(req, res) {
-    res.send(await ArtModel.findById(req.params.id));
+    res.json(await ArtModel.findById(req.params.id));
   },
 
+  // Update one Art
   async Update(req, res) {
-    res.send(await ArtModel.findByIdAndUpdate(req.params.id, req.body));
+    res.json(await ArtModel.findByIdAndUpdate(req.params.id, req.body));
   },
 
+  // Delete one Art
   async Delete(req, res) {
-    res.send(await ArtModel.findByIdAndDelete(req.params.id));
+    res.json(await ArtModel.findByIdAndDelete(req.params.id));
   },
 };

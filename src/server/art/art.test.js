@@ -1,4 +1,3 @@
-/* global describe it */
 const sinon = require('sinon');
 const sinonTest = require('sinon-test');
 
@@ -12,12 +11,12 @@ describe('Art', () => {
     url: 'https://www.google.com',
   };
 
-  it('should INDEX art', test(async function indexTest() {
+  it('should INDEX all art', test(async function indexTest() {
     this.stub(ArtModel, 'find').resolves([art]);
 
     const req = {};
     const res = {
-      send: sinon.spy(),
+      send: this.spy(),
     };
 
     await ArtController.Index(req, res);
@@ -28,15 +27,15 @@ describe('Art', () => {
     sinon.assert.calledWith(res.send, [art]);
   }));
 
-  it('should CREATE art', test(async function createTest() {
+  it('should CREATE new art', test(async function createTest() {
     this.stub(ArtModel, 'create').resolves(art);
 
     const req = {
       body: art,
     };
-
-    const res = {};
-    res.send = this.spy();
+    const res = {
+      send: this.spy(),
+    };
 
     await ArtController.Create(req, res);
 
@@ -47,16 +46,15 @@ describe('Art', () => {
     sinon.assert.calledWith(res.send, art);
   }));
 
-  it('should GET art', test(async function getTest() {
+  it('should GET one art', test(async function getTest() {
     this.stub(ArtModel, 'findById').resolves(art);
 
     const id = 42;
     const req = {
       params: { id },
     };
-
     const res = {
-      send: sinon.stub(),
+      send: this.stub(),
     };
 
     await ArtController.Get(req, res);
@@ -68,16 +66,15 @@ describe('Art', () => {
     sinon.assert.calledWith(res.send, art);
   }));
 
-  it('should DELETE art', test(async function deleteTest() {
+  it('should DELETE one art', test(async function deleteTest() {
     this.stub(ArtModel, 'findByIdAndDelete').resolves(art);
 
     const id = 42;
     const req = {
       params: { id },
     };
-
     const res = {
-      send: sinon.spy(),
+      send: this.spy(),
     };
 
     await ArtController.Delete(req, res);
@@ -89,7 +86,7 @@ describe('Art', () => {
     sinon.assert.calledWith(res.send, art);
   }));
 
-  it('should UPDATE art', test(async function updateTest() {
+  it('should UPDATE one art', test(async function updateTest() {
     this.stub(ArtModel, 'findByIdAndUpdate').resolves(art);
 
     const id = 42;
@@ -97,9 +94,8 @@ describe('Art', () => {
       params: { id },
       body: art,
     };
-
     const res = {
-      send: sinon.stub(),
+      send: this.stub(),
     };
 
     await ArtController.Update(req, res);
