@@ -4,12 +4,12 @@ const config = require('../config/config');
 
 //  Middleware the checks if user is logged in. Also checks if user is an artist
 module.exports = (req, res, next) => {
-  if (req.cookies.config.cookie === undefined || req.cookies.config.cookie === null) {
+  if (req.cookies.Token === undefined || req.cookies.Token === null) {
     req.user = null;
     req.isArtist = false;
     return next();
   }
-  const token = req.cookies.config.cookie;
+  const token = req.cookies.Token;
   const uid = jwt.decode(token, config.jwtSecret)._id; // eslint-disable-line no-underscore-dangle
   Model.User.findById(uid)
     .then((user) => {
