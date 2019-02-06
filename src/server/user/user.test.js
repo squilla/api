@@ -5,7 +5,7 @@ const UserModel = require('./user.model');
 const UserController = require('./user.controller');
 
 const test = sinonTest(sinon);
-
+// eslint-disable-next-line no-undef
 describe('User', () => {
   const user = {
     firstName: 'Test',
@@ -13,7 +13,7 @@ describe('User', () => {
     email: 'email@email.com',
     password: 'testPassword',
   };
-
+  // eslint-disable-next-line no-undef
   it('Should Index ALL Users (artists included) at GET: /api/users', test(async function indexTest() {
     this.stub(UserModel.User, 'find').resolves([user]);
 
@@ -28,7 +28,7 @@ describe('User', () => {
     sinon.assert.calledOnce(res.send);
     sinon.assert.calledWith(res.send, [user]);
   }));
-
+  // eslint-disable-next-line no-undef
   it('Should send specific user given ID at GET: /api/users/:id', test(async function getTest() {
     this.stub(UserModel.User, 'findById').resolves(user);
     const id = 50;
@@ -46,7 +46,7 @@ describe('User', () => {
     sinon.assert.calledOnce(res.send);
     sinon.assert.calledWith(res.send, user);
   }));
-
+  // eslint-disable-next-line no-undef
   it('Should DELETE a specific user at DELETE: /api/users/:id', test(async function testDelete() {
     this.stub(UserModel.User, 'findOneAndRemove').resolves(user);
 
@@ -64,7 +64,7 @@ describe('User', () => {
     sinon.assert.calledOnce(res.send);
     sinon.assert.calledWith(res.send, user);
   }));
-
+  // eslint-disable-next-line no-undef
   it('Should UPDATE user info at PATCH: /api/users/:id', test(async function updateTest() {
     this.stub(UserModel.User, 'findOneAndUpdate').resolves(user);
 
