@@ -16,15 +16,15 @@ describe('Art', () => {
 
     const req = {};
     const res = {
-      send: this.spy(),
+      json: this.spy()
     };
 
     await ArtController.Index(req, res);
 
     sinon.assert.calledOnce(ArtModel.find);
 
-    sinon.assert.calledOnce(res.send);
-    sinon.assert.calledWith(res.send, [art]);
+    sinon.assert.calledOnce(res.json);
+    sinon.assert.calledWith(res.json, [art]);
   }));
 
   it('should CREATE new art', test(async function createTest() {
@@ -34,7 +34,7 @@ describe('Art', () => {
       body: art,
     };
     const res = {
-      send: this.spy(),
+      json: this.spy()
     };
 
     await ArtController.Create(req, res);
@@ -42,8 +42,8 @@ describe('Art', () => {
     sinon.assert.calledOnce(ArtModel.create);
     sinon.assert.calledWith(ArtModel.create, art);
 
-    sinon.assert.calledOnce(res.send);
-    sinon.assert.calledWith(res.send, art);
+    sinon.assert.calledOnce(res.json);
+    sinon.assert.calledWith(res.json, art);
   }));
 
   it('should GET one art', test(async function getTest() {
@@ -54,7 +54,7 @@ describe('Art', () => {
       params: { id },
     };
     const res = {
-      send: this.stub(),
+      json: this.spy(),
     };
 
     await ArtController.Get(req, res);
@@ -62,8 +62,8 @@ describe('Art', () => {
     sinon.assert.calledOnce(ArtModel.findById);
     sinon.assert.calledWith(ArtModel.findById, id);
 
-    sinon.assert.calledOnce(res.send);
-    sinon.assert.calledWith(res.send, art);
+    sinon.assert.calledOnce(res.json);
+    sinon.assert.calledWith(res.json, art);
   }));
 
   it('should DELETE one art', test(async function deleteTest() {
@@ -74,7 +74,7 @@ describe('Art', () => {
       params: { id },
     };
     const res = {
-      send: this.spy(),
+      json: this.spy()
     };
 
     await ArtController.Delete(req, res);
@@ -82,8 +82,8 @@ describe('Art', () => {
     sinon.assert.calledOnce(ArtModel.findByIdAndDelete);
     sinon.assert.calledWith(ArtModel.findByIdAndDelete, id);
 
-    sinon.assert.calledOnce(res.send);
-    sinon.assert.calledWith(res.send, art);
+    sinon.assert.calledOnce(res.json);
+    sinon.assert.calledWith(res.json, art);
   }));
 
   it('should UPDATE one art', test(async function updateTest() {
@@ -95,7 +95,7 @@ describe('Art', () => {
       body: art,
     };
     const res = {
-      send: this.stub(),
+      json: this.spy(),
     };
 
     await ArtController.Update(req, res);
@@ -103,7 +103,7 @@ describe('Art', () => {
     sinon.assert.calledOnce(ArtModel.findByIdAndUpdate);
     sinon.assert.calledWith(ArtModel.findByIdAndUpdate, id, art);
 
-    sinon.assert.calledOnce(res.send);
-    sinon.assert.calledWith(res.send, art);
+    sinon.assert.calledOnce(res.json);
+    sinon.assert.calledWith(res.json, art);
   }));
 });
