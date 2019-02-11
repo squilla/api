@@ -1,25 +1,33 @@
 const sinon = require('sinon');
 const sinonTest = require('sinon-test');
+const rewire = require('rewire');
 
-const ArtModel = require('./art.model');
-const ArtController = require('./art.controller');
+const ArtModel = require('./art.model'); // eslint-disable-line import/newline-after-import
+const ArtController = rewire('./art.controller');
+
+const art = { url: 'https://www.google.com' };
+
+// TODO: Find better solution
+// eslint-disable-next-line no-underscore-dangle
+// ArtController.__set__('uploadArt', async (req) => {
+//   req.file = { location: art.url };
+// });
 
 const test = sinonTest(sinon);
 
 describe('Art', () => {
-  const art = {
-    url: 'https://www.google.com',
-  };
+  const res = { json: sinon.spy() };
+
+  beforeEach(() => {
+    sinon.resetHistory();
+  });
 
   it('should INDEX all art', test(async function indexTest() {
     this.stub(ArtModel, 'find').resolves([art]);
 
     const req = {};
-    const res = {
-      json: this.spy()
-    };
 
-    await ArtController.Index(req, res);
+    await ArtController.Index[0](req, res);
 
     sinon.assert.calledOnce(ArtModel.find);
 
@@ -30,14 +38,9 @@ describe('Art', () => {
   it('should CREATE new art', test(async function createTest() {
     this.stub(ArtModel, 'create').resolves(art);
 
-    const req = {
-      body: art,
-    };
-    const res = {
-      json: this.spy()
-    };
+    const req = { file: { location: art.url } };
 
-    await ArtController.Create(req, res);
+    await ArtController.Create[1](req, res);
 
     sinon.assert.calledOnce(ArtModel.create);
     sinon.assert.calledWith(ArtModel.create, art);
@@ -50,14 +53,9 @@ describe('Art', () => {
     this.stub(ArtModel, 'findById').resolves(art);
 
     const id = 42;
-    const req = {
-      params: { id },
-    };
-    const res = {
-      json: this.spy(),
-    };
+    const req = { params: { id } };
 
-    await ArtController.Get(req, res);
+    await ArtController.Get[0](req, res);
 
     sinon.assert.calledOnce(ArtModel.findById);
     sinon.assert.calledWith(ArtModel.findById, id);
@@ -70,14 +68,9 @@ describe('Art', () => {
     this.stub(ArtModel, 'findByIdAndDelete').resolves(art);
 
     const id = 42;
-    const req = {
-      params: { id },
-    };
-    const res = {
-      json: this.spy()
-    };
+    const req = { params: { id } };
 
-    await ArtController.Delete(req, res);
+    await ArtController.Delete[0](req, res);
 
     sinon.assert.calledOnce(ArtModel.findByIdAndDelete);
     sinon.assert.calledWith(ArtModel.findByIdAndDelete, id);
@@ -94,11 +87,8 @@ describe('Art', () => {
       params: { id },
       body: art,
     };
-    const res = {
-      json: this.spy(),
-    };
 
-    await ArtController.Update(req, res);
+    await ArtController.Update[0](req, res);
 
     sinon.assert.calledOnce(ArtModel.findByIdAndUpdate);
     sinon.assert.calledWith(ArtModel.findByIdAndUpdate, id, art);
@@ -106,4 +96,8 @@ describe('Art', () => {
     sinon.assert.calledOnce(res.json);
     sinon.assert.calledWith(res.json, art);
   }));
+
+  after(() => {
+    sinon.restore();
+  });
 });
