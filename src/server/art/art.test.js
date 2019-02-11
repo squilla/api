@@ -1,21 +1,13 @@
 const sinon = require('sinon');
 const sinonTest = require('sinon-test');
-const rewire = require('rewire');
 
-const ArtModel = require('./art.model'); // eslint-disable-line import/newline-after-import
-const ArtController = rewire('./art.controller');
-
-const art = { url: 'https://www.google.com' };
-
-// TODO: Find better solution
-// eslint-disable-next-line no-underscore-dangle
-// ArtController.__set__('uploadArt', async (req) => {
-//   req.file = { location: art.url };
-// });
+const ArtModel = require('./art.model');
+const ArtController = require('./art.controller');
 
 const test = sinonTest(sinon);
 
 describe('Art', () => {
+  const art = { url: 'https://www.google.com' };
   const res = { json: sinon.spy() };
 
   beforeEach(() => {
