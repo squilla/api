@@ -54,13 +54,48 @@ Removes a users cookie, signing a user out.
 **Note** that creating users is done in the sign-up route and is not handled here
 ###
 The user routes handle:
-- getting user objects
+- getting user/artist objects
 - updating a user/artists info
 - deleting a user/artist 
-### Index 
+### User Objects Contain
+- _id
+- firstName 
+- lastName
+- email
+- password
+- isArist
+- favoriteArtist - array of favorited artists
+- favoritedArt - array of liked art
+###
+**If isArtist is true user is an artist and also has:**
+- nickname
+- bio
+- art
+- favorites - users who favorited artist
+### Get all users
 returns all user and artist objects in an array
 ###
 **Example Request:**
 
     GET "/api/users"
 
+
+### Get Single User 
+returns a single user object
+###
+**Example Request:**
+
+    GET "/api/users/:id" // :id is equal to the users _id
+
+### Update User/Artist Info
+This route updates a users info, this also includes artists. 
+###
+**Example Request:**
+
+    PATCH "/api/users/:id"  // id is equal to the users _id
+### Delete User/Artist
+This route deletes a user or artist from database
+###
+**Example Request:**
+
+    DELETE "/api/users/:id" // id is equal to user _id
