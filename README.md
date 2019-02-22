@@ -99,3 +99,23 @@ This route deletes a user or artist from database
 **Example Request:**
 
     DELETE "/api/users/:id" // id is equal to user _id
+
+## Artists
+**NOTE** Creating, updating and deleting artists is done in the users routes
+###
+Artists are a subset of user. Artist routes handle the following:
+- Returing all artist objects (Artist objects were shown in the users section)
+- returning single artist object
+### Get all Artists 
+returns an array of all artist objects
+###
+**Example Request:**
+
+    GET "/api/artists"
+### Get single artist
+Returns single artist object
+###
+**Example Request:**
+
+    GET "/api/artists/:id" // id equal to artists _id 
+  
