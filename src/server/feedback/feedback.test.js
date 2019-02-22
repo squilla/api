@@ -87,10 +87,14 @@ describe('Feedback', () => {
   }));
 
   it('Should CREATE new feedback at GET: /api/feedback', test(async function createTest() {
-    this.stub(Model.Feedback, 'save').resolves(feedback);
+    this.stub(Model.Feedback, 'create').resolves(feedback);
 
     const req = {
-      body: { feedback },
+      body: {
+        art: 49,
+        feedbackType: 'comment',
+        content: 'This is a test comment',
+      },
     };
     const res = {
       send: this.stub(),
@@ -98,8 +102,7 @@ describe('Feedback', () => {
 
     await feedbackController.Create(req, res);
 
-    sinon.assert.calledOnce(Model.Feedback.save);
-    sinon.assert.calledWith(Model.Feedback.save, req.body);
+    sinon.assert.calledOnce(Model.Feedback.create);
     sinon.assert.calledOnce(res.send);
   }));
 });
