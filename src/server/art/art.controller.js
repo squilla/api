@@ -42,7 +42,7 @@ module.exports = {
   GetRandom: [
     expressAsyncHandler(async (req, res) => {
       const count = await ArtModel.countDocuments();
-      const Art = await ArtModel.findOne().skip(Math.floor(Math.random() * count))
+      const Art = await ArtModel.findOne().skip(Math.floor(Math.random() * count));
       res.json(Art);
     }),
   ],
