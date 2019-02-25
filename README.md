@@ -118,4 +118,3 @@ Returns single artist object
 **Example Request:**
 
     GET "/api/artists/:id" // id equal to artists _id 
-  
