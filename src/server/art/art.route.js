@@ -5,6 +5,8 @@ const router = express.Router();
 
 router.get('/', ...ArtController.Index);
 
+router.get('/random', ...ArtController.GetRandom);
+
 router.post('/', ...ArtController.Create);
 
 router.get('/:id', ...ArtController.Get);

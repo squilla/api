@@ -1,95 +1,128 @@
 const sinon = require('sinon');
-const sinonTest = require('sinon-test');
+require('sinon-mongoose');
 
 const ArtModel = require('./art.model');
 const ArtController = require('./art.controller');
-
-const test = sinonTest(sinon);
 
 describe('Art', () => {
   const art = { url: 'https://www.google.com' };
   const res = { json: sinon.spy() };
 
-  beforeEach(() => {
-    sinon.resetHistory();
+  const sandbox = sinon.createSandbox();
+  const ArtMock = sinon.mock(ArtModel);
+
+  afterEach(() => {
+    res.json.resetHistory();
+    ArtMock.restore();
+    sandbox.restore();
   });
 
-  it('should INDEX all art', test(async function indexTest() {
-    this.stub(ArtModel, 'find').resolves([art]);
+  it('should INDEX all art', async () => {
+    ArtMock
+      .expects('find')
+      .resolves([art]);
 
     const req = {};
 
     await ArtController.Index[0](req, res);
 
-    sinon.assert.calledOnce(ArtModel.find);
-
     sinon.assert.calledOnce(res.json);
     sinon.assert.calledWith(res.json, [art]);
-  }));
+  });
 
-  it('should CREATE new art', test(async function createTest() {
-    this.stub(ArtModel, 'create').resolves(art);
+  it('should GET one random art', async () => {
+    ArtMock
+      .expects('countDocuments')
+      .resolves(42);
 
-    const req = { file: { location: art.url } };
+    sandbox.stub(Math, 'random').returns(0.5);
+
+    ArtMock
+      .expects('findOne')
+      .chain('skip')
+      .withArgs(21)
+      .resolves(art);
+
+    const req = {};
+
+    await ArtController.GetRandom[0](req, res);
+
+    ArtMock.verify();
+
+    sinon.assert.calledOnce(res.json);
+    sinon.assert.calledWith(res.json, art);
+  });
+
+  it('should CREATE new art', async () => {
+    ArtMock
+      .expects('create')
+      .resolves(art);
+
+    const req = {
+      file: { location: art.url },
+    };
 
     await ArtController.Create[1](req, res);
 
-    sinon.assert.calledOnce(ArtModel.create);
-    sinon.assert.calledWith(ArtModel.create, art);
+    ArtMock.verify();
 
     sinon.assert.calledOnce(res.json);
     sinon.assert.calledWith(res.json, art);
-  }));
+  });
 
-  it('should GET one art', test(async function getTest() {
-    this.stub(ArtModel, 'findById').resolves(art);
-
+  it('should GET one art', async () => {
     const id = 42;
-    const req = { params: { id } };
+    const req = {
+      params: { id },
+    };
+
+    ArtMock
+      .expects('findById')
+      .withArgs(id)
+      .resolves(art);
 
     await ArtController.Get[0](req, res);
 
-    sinon.assert.calledOnce(ArtModel.findById);
-    sinon.assert.calledWith(ArtModel.findById, id);
+    ArtMock.verify();
 
     sinon.assert.calledOnce(res.json);
     sinon.assert.calledWith(res.json, art);
-  }));
+  });
 
-  it('should DELETE one art', test(async function deleteTest() {
-    this.stub(ArtModel, 'findByIdAndDelete').resolves(art);
-
+  it('should DELETE one art', async () => {
     const id = 42;
-    const req = { params: { id } };
+    const req = {
+      params: { id },
+    };
+
+    ArtMock
+      .expects('findByIdAndDelete')
+      .withArgs(id)
+      .resolves(art);
 
     await ArtController.Delete[0](req, res);
 
-    sinon.assert.calledOnce(ArtModel.findByIdAndDelete);
-    sinon.assert.calledWith(ArtModel.findByIdAndDelete, id);
+    ArtMock.verify();
 
     sinon.assert.calledOnce(res.json);
     sinon.assert.calledWith(res.json, art);
-  }));
+  });
 
-  it('should UPDATE one art', test(async function updateTest() {
-    this.stub(ArtModel, 'findByIdAndUpdate').resolves(art);
-
+  it('should UPDATE one art', async () => {
     const id = 42;
     const req = {
       params: { id },
       body: art,
     };
 
-    await ArtController.Update[0](req, res);
+    ArtMock
+      .expects('findByIdAndUpdate')
+      .withArgs(id, art)
+      .resolves(art);
 
-    sinon.assert.calledOnce(ArtModel.findByIdAndUpdate);
-    sinon.assert.calledWith(ArtModel.findByIdAndUpdate, id, art);
+    await ArtController.Update[0](req, res);
 
     sinon.assert.calledOnce(res.json);
     sinon.assert.calledWith(res.json, art);
-  }));
-
-  after(() => {
-    sinon.restore();
   });
 });
