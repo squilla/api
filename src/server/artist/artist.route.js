@@ -1,6 +1,6 @@
 const express = require('express');
+const wrap = require('express-async-handler');
 const controller = require('./artist.controller');
-const wrap = require('../../middleware/asyncHandler');
 
 const router = express.Router();
 //  NOTE: Aritst is actually a user so ArtistSchema is in User Model

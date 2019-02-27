@@ -1,7 +1,8 @@
 const express = require('express');
+const wrap = require('express-async-handler');
+
 const controller = require('./auth.controller');
 const artistController = require('../artist/artist.controller');
-const wrap = require('../../middleware/asyncHandler');
 
 const router = express.Router();
 
