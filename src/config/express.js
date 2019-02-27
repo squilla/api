@@ -1,11 +1,13 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 const routes = require('../index.routes');
 const checkAuth = require('../middleware/checkAuth');
 
 const app = express();
 
 //  Setup middleware:
+app.use(cors());
 app.use(cookieParser());
 app.use(checkAuth);
 app.use(express.json());
