@@ -1,8 +1,8 @@
 const express = require('express');
+const wrap = require('express-async-handler');
 const commentController = require('./types/comment.controller');
 const reactionController = require('./types/reaction.controller');
 const feedbackController = require('./feedback.controller');
-const wrap = require('../../middleware/asyncHandler');
 
 const router = express.Router();
 
