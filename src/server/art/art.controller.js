@@ -65,7 +65,6 @@ module.exports = {
 
       if (req.file) {
         const matches = s3RegExp.exec(art.url);
-        console.log(matches);
         const [, bucket, , key] = matches;
 
         queued.push(

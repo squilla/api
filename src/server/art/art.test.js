@@ -1,5 +1,3 @@
-const fs = require('fs');
-const path = require('path');
 const rewire = require('rewire');
 const sinon = require('sinon');
 require('sinon-mongoose');
@@ -10,51 +8,47 @@ const ArtController = rewire('./art.controller');
 const s3 = ArtController.__get__('s3'); // eslint-disable-line no-underscore-dangle
 
 describe('Art', () => {
-  // TODO: Use sinon-mongoose to mock as document
-  const art = {
-    name: 'Tester',
-    decription: 'Test art',
-    url: 'https://squilla.s3.us-west-1.amazonaws.com/art/1551208845978',
-    // TODO: Remove if mocked as document
-    remove: sinon.stub().resolves(),
-    save: sinon.stub().resolves(),
-    isModified: sinon.stub().returns(true),
-  };
   const file = {
-    // TODO: Use Base64 image rather than file
-    buffer: fs.readFileSync(path.join(__dirname, './test.png')),
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=', 'base64'),
   };
 
   const res = { json: sinon.spy() };
 
   const sandbox = sinon.createSandbox();
-  let ArtMock = sinon.mock(ArtModel);
+
+  let artMock;
+  let ArtMock;
+
+  beforeEach(() => {
+    // TODO: Figure out how to not reassign
+    ArtMock = sinon.mock(ArtModel);
+    artMock = sinon.mock(new ArtModel({
+      name: 'Tester',
+      decription: 'Test art',
+      url: 'https://squilla.s3.us-west-1.amazonaws.com/art/1551208845978',
+    }));
+  });
 
   afterEach(() => {
-    res.json.resetHistory();
-
-    // TODO: Remove if document is mocked
-    art.remove.resetHistory();
-    art.save.resetHistory();
-
-    ArtMock.restore();
     sandbox.restore();
 
-    // TODO: Figure out how not to reassign as findById can't be reassigned
-    ArtMock = sinon.mock(ArtModel);
+    res.json.resetHistory();
+
+    ArtMock.restore();
+    artMock.restore();
   });
 
   it('should INDEX all art', async () => {
     ArtMock
       .expects('find')
-      .resolves([art]);
+      .resolves([artMock.object]);
 
     const req = {};
 
     await ArtController.Index[0](req, res);
 
     sinon.assert.calledOnce(res.json);
-    sinon.assert.calledWith(res.json, [art]);
+    sinon.assert.calledWith(res.json, [artMock.object]);
   });
 
   it('should GET one random art', async () => {
@@ -69,7 +63,7 @@ describe('Art', () => {
       .expects('findOne')
       .chain('skip')
       .withArgs(21)
-      .resolves(art);
+      .resolves(artMock.object);
 
     const req = {};
 
@@ -78,7 +72,7 @@ describe('Art', () => {
     ArtMock.verify();
 
     sinon.assert.calledOnce(res.json);
-    sinon.assert.calledWith(res.json, art);
+    sinon.assert.calledWith(res.json, artMock.object);
   });
 
   it('should CREATE new art', async () => {
@@ -87,12 +81,12 @@ describe('Art', () => {
 
     // Stub S3 .upload()
     sandbox.stub(s3, 'upload').returns({
-      promise: () => Promise.resolve({ Location: art.url }),
+      promise: () => Promise.resolve({ Location: artMock.object.url }),
     });
 
     ArtMock
       .expects('create')
-      .resolves(art);
+      .resolves(artMock.object);
 
     const req = { file };
 
@@ -101,7 +95,7 @@ describe('Art', () => {
     ArtMock.verify();
 
     sinon.assert.calledOnce(res.json);
-    sinon.assert.calledWith(res.json, art);
+    sinon.assert.calledWith(res.json, artMock.object);
   });
 
   it('should GET one art', async () => {
@@ -113,14 +107,14 @@ describe('Art', () => {
     ArtMock
       .expects('findById')
       .withArgs(id)
-      .resolves(art);
+      .resolves(artMock.object);
 
     await ArtController.Get[0](req, res);
 
     ArtMock.verify();
 
     sinon.assert.calledOnce(res.json);
-    sinon.assert.calledWith(res.json, art);
+    sinon.assert.calledWith(res.json, artMock.object);
   });
 
   it('should DELETE one art', async () => {
@@ -137,14 +131,19 @@ describe('Art', () => {
     ArtMock
       .expects('findById')
       .withArgs(id)
-      .resolves(art);
+      .resolves(artMock.object);
+
+    artMock
+      .expects('remove')
+      .resolves();
 
     await ArtController.Delete[0](req, res);
 
     ArtMock.verify();
+    artMock.verify();
 
     sinon.assert.calledOnce(res.json);
-    sinon.assert.calledWith(res.json, art);
+    sinon.assert.calledWith(res.json, artMock.object);
   });
 
   // TODO: Properly test modifying art fields
@@ -157,17 +156,28 @@ describe('Art', () => {
 
     // Stub S3 .upload()
     sandbox.stub(s3, 'upload').returns({
-      promise: () => Promise.resolve({ Location: art.url }),
+      promise: () => Promise.resolve({ Location: artMock.url }),
     });
 
     ArtMock
       .expects('findById')
       .withArgs(id)
-      .resolves(art);
+      .resolves(artMock.object);
+
+    artMock
+      .expects('save')
+      .resolves();
+
+    artMock
+      .expects('isModified')
+      .returns(true);
 
     await ArtController.Update[1](req, res);
 
+    ArtMock.verify();
+    artMock.verify();
+
     sinon.assert.calledOnce(res.json);
-    sinon.assert.calledWith(res.json, art);
+    sinon.assert.calledWith(res.json, artMock.object);
   });
 });
