@@ -34,7 +34,6 @@ const User = mongoose.model('User', BaseSchema);
 const ArtistSchema = new Schema({
   nickname: { type: String, required: true },
   bio: { type: String, required: false },
-  art: [{ type: Schema.Types.ObjectId, ref: 'Art' }],
   favorites: [{ type: Schema.Types.ObjectId, ref: 'User' }],
 }, options);
 
