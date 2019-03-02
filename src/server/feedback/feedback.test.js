@@ -33,7 +33,7 @@ describe('Feedback', () => {
       reaction: 'Happy',
     };
   });
- 
+
   afterEach(() => {
     // restores sandbox, resetting spyz
     sandbox.restore();
@@ -44,29 +44,33 @@ describe('Feedback', () => {
     feedbackMock.restore();
   });
 
-  it('Should INDEX all feedback (regardless of types at GET: /api/feedback', test(async function indexTest() {
-    this.stub(Model.Feedback, 'find').resolves([feedbackMock]);
+  it('Should INDEX all feedback regardless of type at GET: /api/feedback', async () => {
+    feedbackMock
+      .expects('find')
+      .resolves([feedbackMock.object]);
 
     const req = {};
 
-    await feedbackController.Index(req, res);
+    await feedbackController.Index[0](req, res);
 
-    sinon.assert.calledOnce(Model.Feedback.find);
     sinon.assert.calledOnce(res.send);
-    sinon.assert.calledWith(res.send, [feedbackMock]);
-  }));
+    //  make sure res.send is called with feedback object
+    sinon.assert.calledWith(res.send, [feedbackMock.object]);
+  });
 
-  it('Should INDEX all Comment feedback types at GET: /api/feedback/comments', test(async function testCommentIndex() {
-    this.stub(Model.Comment, 'find').resolves([feedbackMock]);
+  it('Should INDEX all reaction feedback types at GET: /api/feedback/reactions', async () => {
+    reactionMock
+      .expects('find')
+      .resolves([reactionMock.object]);
 
     const req = {};
 
-    await commentController.Index(req, res);
+    await reactionController.Index[0](req, res);
 
-    sinon.assert.calledOnce(Model.Comment.find);
+    //  make sure res.send is called with reaction object
     sinon.assert.calledOnce(res.send);
-    sinon.assert.calledWith(res.send, [feedback]);
-  }));
+    sinon.assert.calledWith(res.send, reactionMock.object);
+  });
 
   it('Should INDEX all reaction feedback types at GET: /api/feedback/reactions', test(async function testReactionIndex() {
     this.stub(Model.Reaction, 'find').resolves([reaction]);
