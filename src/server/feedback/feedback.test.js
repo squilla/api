@@ -1,9 +1,8 @@
 const sinon = require('sinon');
 
 const rewire = ('rewire');
-const Model = require('./feedback.model');
 
-const commentController = rewire('./types/comment.controller');
+// const commentController = rewire('./types/comment.controller');
 const feedbackController = rewire('./feedback.controller');
 const reactionController = rewire('./types/reaction.controller');
 require('../../config/config');
@@ -72,55 +71,37 @@ describe('Feedback', () => {
     sinon.assert.calledWith(res.send, reactionMock.object);
   });
 
-  it('Should INDEX all reaction feedback types at GET: /api/feedback/reactions', test(async function testReactionIndex() {
-    this.stub(Model.Reaction, 'find').resolves([reaction]);
-
-    const req = {};
-    const res = {
-      send: this.spy(),
-    };
-
-    await reactionController.Index(req, res);
-
-    sinon.assert.calledOnce(Model.Reaction.find);
-    sinon.assert.calledOnce(res.send);
-    sinon.assert.calledWith(res.send, [reaction]);
-  }));
-
-  it('Should GET single feedback at GET: /api/feedback/:id', test(async function testGet() {
-    this.stub(Model.Feedback, 'findById').resolves(feedback);
-    const id = feedback._id; // eslint-disable-line no-underscore-dangle
+  it('Should GET one feedback item by id at GET: /api/feedback/:id', async () => {
+    const id = 44;
     const req = {
       params: { id },
     };
-    const res = {
-      send: this.stub(),
-    };
 
-    await feedbackController.Get(req, res);
+    feedbackMock
+      .expects('findById')
+      .withArgs(id)
+      .resolves(feedbackMock.object);
 
-    sinon.assert.calledOnce(Model.Feedback.findById);
-    sinon.assert.calledWith(Model.Feedback.findById, req.params.id);
+    await feedbackController.Get[0](req, res);
+
+    //  test that res.send was called and sending a feedback obj
     sinon.assert.calledOnce(res.send);
-    sinon.assert.calledWith(res.send, feedback);
-  }));
+    sinon.assert.calledWith(res.send, feedbackMock.object);
+  });
 
-  it('Should CREATE new feedback at POST: /api/feedback', test(async function createTest() {
-    this.stub(Model.Feedback, 'Create').resolves(feedback);
+  it('Should POST and Create a new piece of feedback at POST: /api/feedback', async () => {
     const req = {
-      body: {
-        art: 50,
-        feedbackType: 'comment',
-        content: 'This is a test comment',
-      },
-    };
-    const res = {
-      send: this.stub(),
+      body: feedbackMock.object,
     };
 
-    await feedbackController.Create(req, res);
+    feedbackMock
+      .expects('.save')
+      .resolves(feedbackMock.object);
 
-    sinon.assert.calledOnce(Model.Feedback);
+    await feedbackController.Create[0](req, res);
+
+    //  test that res.send is being called with a feedback obj
     sinon.assert.calledOnce(res.send);
-  }));
+    sinon.assert.calledWith(feedbackMock.object);
+  });
 });
