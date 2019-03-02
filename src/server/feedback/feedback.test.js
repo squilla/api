@@ -1,58 +1,65 @@
 const sinon = require('sinon');
-const sinonTest = require('sinon-test');
+
+const rewire = ('rewire');
+const Model = require('./feedback.model');
+
+const commentController = rewire('./types/comment.controller');
+const feedbackController = rewire('./feedback.controller');
+const reactionController = rewire('./types/reaction.controller');
+require('../../config/config');
 require('sinon-mongoose');
 
-const Model = require('./feedback.model');
-const commentController = require('./types/comment.controller');
-const feedbackController = require('./feedback.controller');
-const reactionController = require('./types/reaction.controller');
-require('../../config/config');
-
-const test = sinonTest(sinon);
 
 describe('Feedback', () => {
-  let feedback;
-  let reaction;
+  let feedbackMock; // mock feedback for testing
+  let reactionMock; // mock reaction for testing
 
+  // sets up the sinon spy in the response
+  const res = { json: sinon.spy() };
+  // creates a new sinon sandbox
+  const sandbox = sinon.createSandbox();
   beforeEach(() => {
-    feedback = {
+    feedbackMock = {
       _id: 50,
       art: 49,
       feedbackType: 'comment',
       content: 'This is a test comment',
     };
 
-    reaction = {
+    reactionMock = {
       _id: 55,
       art: 56,
       feedbackType: 'reaction',
       reaction: 'Happy',
     };
   });
-
+ 
+  afterEach(() => {
+    // restores sandbox, resetting spyz
+    sandbox.restore();
+    // reset the json history
+    res.json.resetHistory();
+    // reset the mocks
+    reactionMock.restore();
+    feedbackMock.restore();
+  });
 
   it('Should INDEX all feedback (regardless of types at GET: /api/feedback', test(async function indexTest() {
-    this.stub(Model.Feedback, 'find').resolves([feedback]);
+    this.stub(Model.Feedback, 'find').resolves([feedbackMock]);
 
     const req = {};
-    const res = {
-      send: this.spy(),
-    };
 
     await feedbackController.Index(req, res);
 
     sinon.assert.calledOnce(Model.Feedback.find);
     sinon.assert.calledOnce(res.send);
-    sinon.assert.calledWith(res.send, [feedback]);
+    sinon.assert.calledWith(res.send, [feedbackMock]);
   }));
 
   it('Should INDEX all Comment feedback types at GET: /api/feedback/comments', test(async function testCommentIndex() {
-    this.stub(Model.Comment, 'find').resolves([feedback]);
-    
+    this.stub(Model.Comment, 'find').resolves([feedbackMock]);
+
     const req = {};
-    const res = {
-      send: this.spy(),
-    };
 
     await commentController.Index(req, res);
 
