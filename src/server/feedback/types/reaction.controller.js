@@ -5,13 +5,11 @@ const Model = require('../feedback.model');
 
 //  Returns all Reactions (feedback type)
 async function Index(req, res) {
-  res.send(await Model.Reaction.find());
+  res.send(await Model.Reaction.find({})); // queries all reaction
 }
 
 async function Create(req, res) {
-  const reaction = new Model.Reaction(req.body);
-  await reaction.save(); //  saving new reaction with data from req.body
-  res.status(200).send('Reaction successfully created.');
+  res.send(await Model.Reaction.create(req.body)); // sends status 200 and reaction
 }
 
 module.exports = {

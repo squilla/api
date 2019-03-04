@@ -12,9 +12,7 @@ async function Index(req, res) {
 
 //  Creates a new Comment (feedback discriminator)
 async function Create(req, res) {
-  const comment = new Model.Comment(req.body);
-  await comment.save();
-  res.status(200).send('Comment Successfully Created.');
+  res.send(await Model.Comment.create(req.body)); // sends status ok and comment
 }
 
 module.exports = {
