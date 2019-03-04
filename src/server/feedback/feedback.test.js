@@ -57,7 +57,7 @@ describe('Feedback', () => {
 
     const req = {};
 
-    await feedbackController.Index(req, res);
+    await feedbackController.Index[0](req, res);
 
     sinon.assert.calledOnce(res.send());
     //  make sure res.send is called with feedback object
@@ -71,7 +71,7 @@ describe('Feedback', () => {
 
     const req = {};
 
-    await reactionController.Index(req, res);
+    await reactionController.Index[0](req, res);
 
     //  make sure res.send is called with reaction object
     sinon.assert.calledOnce(res.json);
@@ -89,7 +89,7 @@ describe('Feedback', () => {
       .withArgs(id)
       .resolves(feedbackMock.object);
 
-    await feedbackController.Get(req, res);
+    await feedbackController.Get[0](req, res);
 
     FeedbackMock.verify(); // verify
 
@@ -107,7 +107,7 @@ describe('Feedback', () => {
       .expects('.save')
       .resolves(feedbackMock.object);
 
-    await feedbackController.Create(req, res);
+    await feedbackController.Create[0](req, res);
 
     //  test that res.send is being called with a feedback obj
     sinon.assert.calledOnce(res.json);
