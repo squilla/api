@@ -13,9 +13,7 @@ module.exports = (req, res, next) => {
   const uid = jwt.decode(token, config.jwtSecret)._id; // eslint-disable-line no-underscore-dangle
   Model.User.findById(uid)
     .then((user) => {
-      if (user.isArtist) {
-        req.isArtist = true;
-      }
+      req.isArtist = user.isArtist; // req.isArtist will be true if user is an artist
       req.user = user;
       res.locals.user = user;
       return next();
