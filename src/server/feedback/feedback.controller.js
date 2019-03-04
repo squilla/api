@@ -31,10 +31,16 @@ async function Create(req, res) {
   return reactionController.Create(req, res); //  * else if (fType === 'reaction')
 }
 
+// queries all feedback for specific piece of art
+async function GetArtFeedback(req, res) {
+  res.send(await Model.Feedback.find({ art: req.params.artId }));
+}
+
 module.exports = {
   Index,
   Get,
   Update,
   Delete,
   Create,
+  GetArtFeedback,
 };

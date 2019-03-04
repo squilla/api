@@ -15,6 +15,9 @@ router.get('/comments', wrap(commentController.Index));
 //  GET-Indx: Returns all Reaction Feedback types ONLY
 router.get('/reactions', wrap(reactionController.Index));
 
+//  Returns all feedback for certain piece of art (art id is the art)
+router.get('/art/:artId', wrap(feedbackController.GetArtFeedback));
+
 //  GET-One: Returns single feedback object
 router.get('/:id', wrap(feedbackController.Get));
 
