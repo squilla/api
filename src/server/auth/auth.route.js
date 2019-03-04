@@ -7,7 +7,7 @@ const artistController = require('../artist/artist.controller');
 const router = express.Router();
 
 //  GET: signs a user out and removes token
-router.get('sign-out', controller.SignOut);
+router.get('/sign-out', wrap(controller.SignOut));
 
 //  POST: Signs up a new regular user and issues cookie
 router.post('/sign-up', wrap((req, res) => {
