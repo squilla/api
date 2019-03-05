@@ -117,4 +117,42 @@ Returns single artist object
 ###
 **Example Request:**
 
-    GET "/api/artists/:id" // id equal to artists _id 
+    GET "/api/artists/:id" // id equal to artists _id
+
+## Feedback 
+Feedback is applied on art via comments or a reaction. **Note** there are 2 kinds of feedback:
+1. Comments 
+2. Reactions
+### Feedback Object
+**Base Feedback:**
+-author (user.__id)
+-art (art it was commented on)
+- feedbackType(decides what kind of feedback will be created)**Must be 'comment' or 'reaction'**
+###
+**Comment Feedback:**
+- content (string that is comment)
+###
+**Reaction Feedback:**
+- reaction (string that equals a reaction)
+
+### Creating new feedback 
+The POST feedback route handles the the creation of either a comment or reaction depending upon the feedbackType field.
+###
+**Example Request:**
+
+        POST "/api/feedback"
+
+### Get all feedback for certain art
+This route returns all the feedback for a specific piece of art.
+###
+**Example Request:**
+
+        GET "/api/feedback/art/:artId" // :artId is id of art you want feedback for 
+
+### Get All Feedback 
+Returns all feedback regardless of type.
+###
+**Example Request:**
+
+        GET "/api/feedback"
+
