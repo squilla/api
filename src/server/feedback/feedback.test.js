@@ -8,6 +8,13 @@ const reactionController = rewire('./types/reaction.controller');
 require('../../config/config');
 require('sinon-mongoose');
 
+const feedbackBody = {
+  _id: 55,
+  art: 56,
+  author: 59,
+  feedbackType: 'reaction',
+  reaction: 'sad',
+};
 
 describe('Feedback', () => {
   let feedbackMock; // mock feedback for testing
@@ -101,18 +108,22 @@ describe('Feedback', () => {
 
   it('Should POST and Create a new piece of feedback at POST: /api/feedback', async () => {
     const req = {
-      body: feedbackMock,
+      body: feedbackBody,
     };
 
-    FeedbackMock
+    ReactionMock
       .expects('create')
-      .resolves(feedbackMock.object);
-
-    await feedbackController.Create(req, res);
-
+      .resolves(reactionMock.object);
+    try {
+      await reactionController.Create(req, res);
+    } catch (err) {
+      console.log(err) // eslint-disable-line
+    }
+    ReactionMock.verify();
     //  test that res.send is being called with a feedback obj
     sinon.assert.calledOnce(res.send);
     sinon.assert.calledOnce('create');
-    sinon.assert.calledWith(res.send, feedbackMock.object);
+    sinon.assert.calledWith('create', req.body);
+    sinon.assert.calledWith(res.send, reactionMock.object);
   });
 });

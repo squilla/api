@@ -24,12 +24,12 @@ const FeedbackSchema = new Schema({
   author: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    required: false,
   },
   art: {
     type: Schema.Types.ObjectId,
     ref: 'Art',
-    required: true,
+    required: false,
   },
   feedbackType: {
     type: String,
