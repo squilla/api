@@ -1,7 +1,9 @@
 const AWS = require('aws-sdk');
 const multer = require('multer');
-const expressAsyncHandler = require('express-async-handler');
+const asyncHandler = require('express-async-handler');
+const pick = require('lodash.pick');
 const ArtModel = require('./art.model');
+const checkAuth = require('../../middleware/checkAuth');
 
 const s3 = new AWS.S3();
 
@@ -14,18 +16,46 @@ const s3RegExp = /https:\/\/(.*?)\.s3.(.*?)\.amazonaws\.com\/(.*)/;
 
 const uploadArt = upload.single('art');
 
+const checkIsArtist = (req, res, next) => {
+  if (req.isArtist) {
+    next();
+  } else {
+    res.status(403).send('User is not an artist');
+  }
+};
+
+const findDoc = asyncHandler(async (req, res, next) => {
+  req.art = await ArtModel.findById(req.params.id);
+
+  if (req.art) {
+    next();
+  } else {
+    res.status(400).send('Art does not exist');
+  }
+});
+
+const checkOwnership = (req, res, next) => {
+  if (req.user._id === req.art.artist) {
+    next();
+  } else {
+    res.status(403).send('Artist does not own this art');
+  }
+};
+
 module.exports = {
   // Show all Art
   Index: [
-    expressAsyncHandler(async (req, res) => {
+    asyncHandler(async (req, res) => {
       res.json(await ArtModel.find());
     }),
   ],
 
   // Post new Art
   Create: [
+    checkAuth,
+    checkIsArtist,
     uploadArt,
-    expressAsyncHandler(async (req, res) => {
+    asyncHandler(async (req, res) => {
       // TODO: Use Promise.all() by generating data.Location
       const data = await s3.upload({
         ACL: 'public-read',
@@ -34,7 +64,11 @@ module.exports = {
         Key: `art/${Date.now()}`,
       }).promise();
 
-      const art = await ArtModel.create({ ...req.body, url: data.Location });
+      const art = await ArtModel.create({
+        ...req.body,
+        url: data.Location,
+        artist: req.user._id,
+      });
 
       res.json(art);
     }),
@@ -42,13 +76,14 @@ module.exports = {
 
   // Display one Art
   Get: [
-    expressAsyncHandler(async (req, res) => {
-      res.json(await ArtModel.findById(req.params.id));
+    findDoc,
+    asyncHandler(async (req, res) => {
+      res.json(req.art);
     }),
   ],
 
   GetRandom: [
-    expressAsyncHandler(async (req, res) => {
+    asyncHandler(async (req, res) => {
       const count = await ArtModel.countDocuments();
       const Art = await ArtModel.findOne().skip(Math.floor(Math.random() * count));
       res.json(Art);
@@ -57,37 +92,31 @@ module.exports = {
 
   // Update one Art
   Update: [
+    checkAuth,
+    checkIsArtist,
+    findDoc,
+    checkOwnership,
     uploadArt,
-    expressAsyncHandler(async (req, res) => {
-      const art = await ArtModel.findById(req.params.id);
+    asyncHandler(async (req, res) => {
+      const { art } = req;
 
       const queued = [];
 
       if (req.file) {
         const matches = s3RegExp.exec(art.url);
-        const [, bucket, , key] = matches;
+        const [, Bucket, , Key] = matches;
 
         queued.push(
           s3.upload({
             ACL: 'public-read',
-            Bucket: bucket,
+            Bucket,
             Body: req.file.buffer,
-            Key: key,
+            Key,
           }).promise(),
         );
       }
 
-      if (req.body) {
-        const { name, description } = req.body;
-
-        if (name) {
-          art.name = name;
-        }
-
-        if (description) {
-          art.description = description;
-        }
-      }
+      art.set(pick(req.body, ['name', 'description']));
 
       if (art.isModified()) {
         queued.push(art.save());
@@ -101,15 +130,19 @@ module.exports = {
 
   // Delete one Art
   Delete: [
-    expressAsyncHandler(async (req, res) => {
-      const art = await ArtModel.findById(req.params.id);
+    checkAuth,
+    checkIsArtist,
+    findDoc,
+    checkOwnership,
+    asyncHandler(async (req, res) => {
+      const { art } = req;
 
-      const [, bucket, , key] = s3RegExp.exec(art.url);
+      const [, Bucket, , Key] = s3RegExp.exec(art.url);
 
       await Promise.all([
         s3.deleteObject({
-          Bucket: bucket,
-          Key: key,
+          Bucket,
+          Key,
         }).promise(),
         art.remove(),
       ]);
