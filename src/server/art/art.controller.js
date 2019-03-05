@@ -35,7 +35,7 @@ const findDoc = asyncHandler(async (req, res, next) => {
 });
 
 const checkOwnership = (req, res, next) => {
-  if (req.user._id === req.art.artist) {
+  if (req.user._id.equals(req.art.artist)) {
     next();
   } else {
     res.status(403).send('Artist does not own this art');

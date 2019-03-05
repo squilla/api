@@ -1,23 +1,28 @@
 const assert = require('assert');
 const rewire = require('rewire');
 const sinon = require('sinon');
-require('sinon-mongoose');
 const { mockReq, mockRes } = require('sinon-express-mock');
+require('sinon-mongoose');
 
+const { Artist: ArtistModel } = require('../user/user.model');
 const ArtModel = require('./art.model'); // eslint-disable-line import/newline-after-import
 const ArtController = rewire('./art.controller');
 
 describe('Art', () => {
   const sampleArt = {
-    _id: 12345,
     name: 'Tester',
     decription: 'Test art',
     url: 'https://squilla.s3.us-west-1.amazonaws.com/art/1551208845978',
-    artist: 67890,
   };
 
   const sampleUser = {
-    _id: 67890,
+    firstName: 'John',
+    lastName: 'Smith',
+    email: 'johnsmith@example.com',
+    password: 'test123',
+    isArtist: true,
+    nickame: 'Johnny Boy',
+    bio: 'I am just a test user',
   };
 
   describe('Middleware', () => {
@@ -125,11 +130,12 @@ describe('Art', () => {
     describe('checkOwnership', () => {
       const checkOwnership = ArtController.__get__('checkOwnership');
 
+
       it('should call next', () => {
-        const req = mockReq({
-          user: sampleUser,
-          art: sampleArt,
-        });
+        const user = new ArtistModel(sampleUser);
+        const art = new ArtModel({ ...sampleArt, artist: user._id });
+
+        const req = mockReq({ user, art });
         const res = mockRes();
         const next = sinon.spy();
 
@@ -139,13 +145,10 @@ describe('Art', () => {
       });
 
       it('should send error', () => {
-        const req = mockReq({
-          user: {
-            ...sampleUser,
-            _id: 13579,
-          },
-          art: sampleArt,
-        });
+        const user = new ArtistModel(sampleUser);
+        const art = new ArtModel({ ...sampleArt, artist: user._id + 1 });
+
+        const req = mockReq({ user, art });
         const res = mockRes();
         const next = sinon.spy();
 
