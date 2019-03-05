@@ -1,109 +1,311 @@
+const assert = require('assert');
+const rewire = require('rewire');
 const sinon = require('sinon');
-const sinonTest = require('sinon-test');
+const { mockReq, mockRes } = require('sinon-express-mock');
+require('sinon-mongoose');
 
-const ArtModel = require('./art.model');
-const ArtController = require('./art.controller');
-
-const test = sinonTest(sinon);
+const { Artist: ArtistModel } = require('../user/user.model');
+const ArtModel = require('./art.model'); // eslint-disable-line import/newline-after-import
+const ArtController = rewire('./art.controller');
 
 describe('Art', () => {
-  const art = {
-    url: 'https://www.google.com',
+  const sampleArt = {
+    name: 'Tester',
+    decription: 'Test art',
+    url: 'https://squilla.s3.us-west-1.amazonaws.com/art/1551208845978',
   };
 
-  it('should INDEX all art', test(async function indexTest() {
-    this.stub(ArtModel, 'find').resolves([art]);
+  const sampleUser = {
+    firstName: 'John',
+    lastName: 'Smith',
+    email: 'johnsmith@example.com',
+    password: 'test123',
+    isArtist: true,
+    nickame: 'Johnny Boy',
+    bio: 'I am just a test user',
+  };
 
-    const req = {};
-    const res = {
-      json: this.spy()
+  describe('Middleware', () => {
+    describe('checkIsArtist', () => {
+      const checkIsArtist = ArtController.__get__('checkIsArtist');
+
+      it('should call next', () => {
+        const req = mockReq({
+          isArtist: true,
+        });
+        const res = mockRes();
+        const next = sinon.spy();
+
+        checkIsArtist(req, res, next);
+
+        sinon.assert.calledOnce(next);
+      });
+
+      it('should send error', () => {
+        const req = mockReq({
+          req: {
+            isArtist: false,
+          },
+        });
+
+        const res = mockRes();
+
+        const next = sinon.spy();
+
+        checkIsArtist(req, res, next);
+
+        sinon.assert.calledOnce(res.status);
+        sinon.assert.calledWith(res.status, 403);
+
+        sinon.assert.calledOnce(res.send);
+        sinon.assert.calledWith(res.send, 'User is not an artist');
+      });
+    });
+
+    describe('findDoc', () => {
+      const findDoc = ArtController.__get__('findDoc');
+      let ArtMock;
+
+      beforeEach(() => {
+        ArtMock = sinon.mock(ArtModel);
+      });
+
+      afterEach(() => {
+        ArtMock.restore();
+      });
+
+      it('should call next', async () => {
+        const id = 42;
+
+        ArtMock
+          .expects('findById')
+          .withArgs(id)
+          .resolves(sampleArt);
+
+        const req = mockReq({
+          params: { id },
+        });
+        const res = mockRes();
+        const next = sinon.spy();
+
+        await findDoc(req, res, next);
+
+        ArtMock.verify();
+        ArtMock.restore();
+
+        assert.equal(sampleArt, req.art, 'req.art must be set to result of findById');
+
+        sinon.assert.calledOnce(next);
+      });
+
+      it('should send error', async () => {
+        const id = 42;
+
+        ArtMock
+          .expects('findById')
+          .withArgs(id)
+          .resolves(null);
+
+        const req = mockReq({
+          params: { id },
+        });
+        const res = mockRes();
+        const next = sinon.spy();
+
+        await findDoc(req, res, next);
+
+        ArtMock.verify();
+        ArtMock.restore();
+
+        assert.equal(null, req.art, 'req.art must be set');
+
+        sinon.assert.calledOnce(res.status);
+        sinon.assert.calledWith(res.status, 400);
+
+        sinon.assert.calledOnce(res.send);
+        sinon.assert.calledWith(res.send, 'Art does not exist');
+      });
+    });
+
+    describe('checkOwnership', () => {
+      const checkOwnership = ArtController.__get__('checkOwnership');
+
+
+      it('should call next', () => {
+        const user = new ArtistModel(sampleUser);
+        const art = new ArtModel({ ...sampleArt, artist: user._id });
+
+        const req = mockReq({ user, art });
+        const res = mockRes();
+        const next = sinon.spy();
+
+        checkOwnership(req, res, next);
+
+        sinon.assert.calledOnce(next);
+      });
+
+      it('should send error', () => {
+        const user = new ArtistModel(sampleUser);
+        const art = new ArtModel({ ...sampleArt, artist: user._id + 1 });
+
+        const req = mockReq({ user, art });
+        const res = mockRes();
+        const next = sinon.spy();
+
+        checkOwnership(req, res, next);
+
+        sinon.assert.calledOnce(res.status);
+        sinon.assert.calledWith(res.status, 403);
+
+        sinon.assert.calledOnce(res.send);
+        sinon.assert.calledWith(res.send, 'Artist does not own this art');
+      });
+    });
+  });
+
+  describe('Routes', () => {
+    const file = {
+      buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=', 'base64'),
     };
 
-    await ArtController.Index(req, res);
+    const s3 = ArtController.__get__('s3');
 
-    sinon.assert.calledOnce(ArtModel.find);
+    const sandbox = sinon.createSandbox();
 
-    sinon.assert.calledOnce(res.json);
-    sinon.assert.calledWith(res.json, [art]);
-  }));
+    afterEach(() => {
+      sandbox.restore();
+    });
 
-  it('should CREATE new art', test(async function createTest() {
-    this.stub(ArtModel, 'create').resolves(art);
+    it('should INDEX all art', async () => {
+      const ArtMock = sinon.mock(ArtModel);
 
-    const req = {
-      body: art,
-    };
-    const res = {
-      json: this.spy()
-    };
+      ArtMock
+        .expects('find')
+        .resolves([sampleArt] * 10);
 
-    await ArtController.Create(req, res);
+      const req = mockReq();
+      const res = mockRes();
 
-    sinon.assert.calledOnce(ArtModel.create);
-    sinon.assert.calledWith(ArtModel.create, art);
+      await ArtController.Index[0](req, res);
 
-    sinon.assert.calledOnce(res.json);
-    sinon.assert.calledWith(res.json, art);
-  }));
+      ArtMock.verify();
+      ArtMock.restore();
 
-  it('should GET one art', test(async function getTest() {
-    this.stub(ArtModel, 'findById').resolves(art);
+      sinon.assert.calledOnce(res.json);
+      sinon.assert.calledWith(res.json, [sampleArt] * 10);
+    });
 
-    const id = 42;
-    const req = {
-      params: { id },
-    };
-    const res = {
-      json: this.spy(),
-    };
+    it('should GET one random art', async () => {
+      const ArtMock = sinon.mock(ArtModel);
 
-    await ArtController.Get(req, res);
+      // Fixes return
+      sandbox.stub(Math, 'random').returns(0.5);
 
-    sinon.assert.calledOnce(ArtModel.findById);
-    sinon.assert.calledWith(ArtModel.findById, id);
+      ArtMock
+        .expects('countDocuments')
+        .resolves(42);
 
-    sinon.assert.calledOnce(res.json);
-    sinon.assert.calledWith(res.json, art);
-  }));
+      ArtMock
+        .expects('findOne')
+        .chain('skip')
+        .withArgs(21)
+        .resolves(sampleArt);
 
-  it('should DELETE one art', test(async function deleteTest() {
-    this.stub(ArtModel, 'findByIdAndDelete').resolves(art);
+      const req = mockReq();
+      const res = mockRes();
 
-    const id = 42;
-    const req = {
-      params: { id },
-    };
-    const res = {
-      json: this.spy()
-    };
+      await ArtController.GetRandom[0](req, res);
 
-    await ArtController.Delete(req, res);
+      ArtMock.verify();
+      ArtMock.restore();
 
-    sinon.assert.calledOnce(ArtModel.findByIdAndDelete);
-    sinon.assert.calledWith(ArtModel.findByIdAndDelete, id);
+      sinon.assert.calledOnce(res.json);
+      sinon.assert.calledWith(res.json, sampleArt);
+    });
 
-    sinon.assert.calledOnce(res.json);
-    sinon.assert.calledWith(res.json, art);
-  }));
+    it('should CREATE new art', async () => {
+      sandbox.stub(Date, 'now').returns(1551208845978);
+      sandbox.stub(s3, 'upload').returns({
+        promise: () => Promise.resolve({ Location: sampleArt.url }),
+      });
 
-  it('should UPDATE one art', test(async function updateTest() {
-    this.stub(ArtModel, 'findByIdAndUpdate').resolves(art);
+      const ArtMock = sinon.mock(ArtModel);
 
-    const id = 42;
-    const req = {
-      params: { id },
-      body: art,
-    };
-    const res = {
-      json: this.spy(),
-    };
+      ArtMock
+        .expects('create')
+        .resolves(sampleArt);
 
-    await ArtController.Update(req, res);
+      const req = mockReq({
+        file,
+        user: sampleUser,
+      });
+      const res = mockRes();
 
-    sinon.assert.calledOnce(ArtModel.findByIdAndUpdate);
-    sinon.assert.calledWith(ArtModel.findByIdAndUpdate, id, art);
+      await ArtController.Create[3](req, res);
 
-    sinon.assert.calledOnce(res.json);
-    sinon.assert.calledWith(res.json, art);
-  }));
+      ArtMock.verify();
+      ArtMock.restore();
+
+      sinon.assert.calledOnce(res.json);
+      sinon.assert.calledWith(res.json, sampleArt);
+    });
+
+    it('should GET one art', async () => {
+      const req = mockReq({ art: sampleArt });
+      const res = mockRes();
+
+      ArtController.Get[1](req, res);
+
+      sinon.assert.calledOnce(res.json);
+      sinon.assert.calledWith(res.json, sampleArt);
+    });
+
+    it('should DELETE one art', async () => {
+      const artMock = sinon.mock(new ArtModel(sampleArt));
+
+      // Stub S3 .objectDelete()
+      sandbox.stub(s3, 'deleteObject').returns({
+        promise: () => Promise.resolve(),
+      });
+
+      artMock
+        .expects('remove')
+        .resolves();
+
+      const req = mockReq({ art: artMock.object });
+      const res = mockRes();
+
+      await ArtController.Delete[4](req, res);
+
+      artMock.verify();
+
+      sinon.assert.calledOnce(res.json);
+      sinon.assert.calledWith(res.json, artMock.object);
+    });
+
+    // TODO: Properly test modifying art fields
+    it('should UPDATE one art', async () => {
+      const artMock = sinon.mock(new ArtModel(sampleArt));
+      const artMockObj = artMock.object;
+
+      // Stub S3 .upload()
+      sandbox.stub(s3, 'upload').returns({
+        promise: () => Promise.resolve({ Location: artMockObj.url }),
+      });
+
+      artMock
+        .expects('save')
+        .resolves();
+
+      const req = mockReq({ art: artMockObj });
+      const res = mockRes();
+
+      await ArtController.Update[5](req, res);
+
+      artMock.verify();
+
+      sinon.assert.calledOnce(res.json);
+      sinon.assert.calledWith(res.json, artMock.object);
+    });
+  });
 });
