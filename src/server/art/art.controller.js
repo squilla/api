@@ -50,6 +50,23 @@ module.exports = {
     }),
   ],
 
+  // Send random
+  GetRandom: [
+    asyncHandler(async (req, res) => {
+      const count = await ArtModel.countDocuments();
+      const Art = await ArtModel.findOne().skip(Math.floor(Math.random() * count));
+      res.json(Art);
+    }),
+  ],
+
+  // Send one Art
+  Get: [
+    findDoc,
+    asyncHandler(async (req, res) => {
+      res.json(req.art);
+    }),
+  ],
+
   // Post new Art
   Create: [
     checkAuth,
@@ -71,22 +88,6 @@ module.exports = {
       });
 
       res.json(art);
-    }),
-  ],
-
-  // Display one Art
-  Get: [
-    findDoc,
-    asyncHandler(async (req, res) => {
-      res.json(req.art);
-    }),
-  ],
-
-  GetRandom: [
-    asyncHandler(async (req, res) => {
-      const count = await ArtModel.countDocuments();
-      const Art = await ArtModel.findOne().skip(Math.floor(Math.random() * count));
-      res.json(Art);
     }),
   ],
 

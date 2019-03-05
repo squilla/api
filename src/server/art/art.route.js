@@ -7,9 +7,9 @@ router.get('/', ...ArtController.Index);
 
 router.get('/random', ...ArtController.GetRandom);
 
-router.post('/', ...ArtController.Create);
-
 router.get('/:id', ...ArtController.Get);
+
+router.post('/', ...ArtController.Create);
 
 router.patch('/:id', ...ArtController.Update);
 
