@@ -12,4 +12,7 @@ router.get('/', wrap(controller.Index));
 //  GET: returns a specific artist object
 router.get('/:id', wrap(controller.Get));
 
+// GET: returns all art from specific artist
+router.get('/:id/art', wrap(controller.GetArt));
+
 module.exports = router;

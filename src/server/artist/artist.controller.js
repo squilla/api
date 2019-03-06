@@ -1,5 +1,6 @@
 const Model = require('../user/user.model');
 const authController = require('../auth/auth.controller');
+const Art = require('../art/art.model');
 //  NOTE: Aritst is actually a user so ArtistSchema is in User Model
 
 //  Creates a new artist given artist data (check user.model for ArtistSchema)
@@ -19,8 +20,14 @@ async function Get(req, res) {
   res.send(await Model.Artist.findById(req.params.id));
 }
 
+// finds all art by artist
+async function GetArt(req, res) {
+  res.send(await Art.find({ artist: req.params.artistId }));
+}
+
 module.exports = {
   Index,
   Create,
   Get,
+  GetArt,
 };
