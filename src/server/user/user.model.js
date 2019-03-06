@@ -9,7 +9,7 @@ const BaseSchema = new Schema({
   updatedAt: { type: Date },
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
-  email: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   isArtist: { type: Boolean, default: false },
 }, options);
