@@ -22,7 +22,7 @@ async function Get(req, res) {
 
 // finds all art by artist
 async function GetArt(req, res) {
-  res.send(await Art.find({ artist: req.params.artistId }));
+  res.send(await Art.find({ artist: req.params.id }));
 }
 
 module.exports = {
